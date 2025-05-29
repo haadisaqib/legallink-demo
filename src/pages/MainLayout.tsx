@@ -32,7 +32,7 @@ const MainLayout = () => {
             )}
           </div>
         </div>
-        <AIToolbar />
+        {pdfFile && <AIToolbar pdfFile={pdfFile} />}
       </main>
     </div>
   );

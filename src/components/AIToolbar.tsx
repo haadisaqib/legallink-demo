@@ -10,62 +10,88 @@ const aiTools = [
 ];
 
 type AIToolbarProps = {
-  onToolClick?: (tool: string) => void;
+  pdfFile: File | null;
 };
 
-const AIToolbar = ({ onToolClick }: AIToolbarProps) => {
-  // Access the OpenRouter API key from Vite env
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+const BACKEND_API_URL = "http://localhost:4000/api/chat";
+const MODEL = "google/gemini-2.0-flash-001"; // Or your preferred model
 
-  // Helper to call OpenRouter API
-  const callOpenRouter = async (prompt: string) => {
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      // Remove the "data:application/pdf;base64," prefix if present
+      const result = reader.result as string;
+      const base64 = result.split(",")[1] || result;
+      resolve(base64);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+const AIToolbar = ({ pdfFile }: AIToolbarProps) => {
+  const callOpenRouterWithPDF = async (prompt: string) => {
+    if (!pdfFile) {
+      alert("No PDF uploaded!");
+      return;
+    }
+    const base64PDF = await fileToBase64(pdfFile);
+
+    const body = {
+      model: MODEL,
+      messages: [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: prompt },
+            {
+              type: "file",
+              file: {
+                filename: pdfFile.name,
+                file_data: `data:application/pdf;base64,${base64PDF}`,
+              },
+            },
+          ],
+        },
+      ],
+      plugins: [
+        {
+          id: "file-parser",
+          pdf: {
+            engine: "native",
+          },
+        },
+      ],
+    };
+
     try {
-      const response = await fetch("https://openrouter.ai/api/v1", {
+      const response = await fetch(BACKEND_API_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${apiKey}`,
         },
-        body: JSON.stringify({
-          model: "openai/gpt-3.5-turbo",
-          messages: [{ role: "user", content: prompt }],
-        }),
+        body: JSON.stringify(body),
       });
-      if (!response.ok) throw new Error("API error");
+      if (!response.ok) {
+        const error = await response.json();
+        alert("API error: " + (error.details?.error?.message || error.error || response.statusText));
+        return;
+      }
       const data = await response.json();
-      const result = data.choices?.[0]?.message?.content || "No result";
-      alert(result); // For demo: show result in alert
-      return result;
+      alert(data.choices?.[0]?.message?.content || "No result");
     } catch (err) {
       alert("Error: " + (err as Error).message);
-      return null;
     }
   };
 
-  // AI Tool functions
-  const handleSummarize = async () => {
-    await callOpenRouter("Summarize the following document: [dummy text]");
-  };
-  const handleRedact = async () => {
-    await callOpenRouter("Redact sensitive information from this document: [dummy text]");
-  };
-  const handleClauseFinder = async () => {
-    await callOpenRouter("Find important clauses in this document: [dummy text]");
-  };
-  const handleChatWithDocument = async () => {
-    await callOpenRouter("Chat with this document: [dummy text]");
-  };
-  const handleAnalyzeRisk = async () => {
-    await callOpenRouter("Analyze the risk in this document: [dummy text]");
-  };
-
-  // Map tool label to handler
+  // Tool handlers
   const toolHandlers: Record<string, () => void> = {
-    Summarize: handleSummarize,
-    Redact: handleRedact,
-    "Clause Finder": handleClauseFinder,
-    "Chat with Document": handleChatWithDocument,
-    "Analyze Risk": handleAnalyzeRisk,
+    Summarize: () => callOpenRouterWithPDF("Summarize the following PDF."),
+    Redact: () => callOpenRouterWithPDF("Redact PPI from the following PDF."),
+    "Clause Finder": () => callOpenRouterWithPDF("Find important clauses in the following PDF."),
+    "Chat with Document": () => callOpenRouterWithPDF("Chat with the following PDF."),
+    "Analyze Risk": () => callOpenRouterWithPDF("Analyze the risk in the following PDF."),
   };
 
   return (
@@ -88,4 +114,4 @@ const AIToolbar = ({ onToolClick }: AIToolbarProps) => {
   );
 };
 
-export default AIToolbar; 
+export default AIToolbar;

@@ -29,11 +29,29 @@ function makePrompt(tool, text, extra) {
   }
 }
 
+// Helper to extract followups from markdown code block
+function extractFollowupsFromContent(content) {
+  // Look for a code block with json array
+  const match = content.match(/```json\\s*([\\s\\S]*?)```/i) || content.match(/```\\s*([\\s\\S]*?)```/i);
+  if (match) {
+    try {
+      const parsed = JSON.parse(match[1]);
+      if (Array.isArray(parsed)) return parsed;
+    } catch {}
+  }
+  // Fallback: look for a numbered or bulleted list
+  const lines = content.split('\n').filter(l => l.match(/^[-*0-9.]/));
+  if (lines.length >= 3) {
+    return lines.slice(0, 3).map(l => l.replace(/^[-*0-9. ]+/, '').trim());
+  }
+  return [];
+}
+
 app.post('/api/chat', async (req, res) => {
   try {
-    const { tool, extra, file } = req.body;
-    if (!tool || !file?.file_data) {
-      return res.status(400).json({ error: 'Missing tool or file_data' });
+    const { tool, extra, file, prompt: userPrompt } = req.body;
+    if (!file?.file_data) {
+      return res.status(400).json({ error: 'Missing file_data' });
     }
 
     // strip off "data:...;base64," prefix if present
@@ -41,7 +59,14 @@ app.post('/api/chat', async (req, res) => {
     const buffer = Buffer.from(b64, 'base64');
     const { text } = await pdfParse(buffer);
 
-    const prompt = makePrompt(tool, text, extra);
+    // If userPrompt is present, use it directly (for chat/followups), else use tool logic
+    let prompt;
+    if (userPrompt) {
+      prompt = userPrompt + "\n\nGive a list of 3 parsable JSON follow up questions.";
+    } else {
+      prompt = makePrompt(tool, text, extra) + "\n\nGive a list of 3 parsable JSON follow up questions.";
+    }
+
     const apiRes = await axios.post(
       'https://openrouter.ai/api/v1/chat/completions',
       {
@@ -57,7 +82,9 @@ app.post('/api/chat', async (req, res) => {
     );
 
     const content = apiRes.data.choices?.[0]?.message?.content || '';
-    return res.json({ content });
+    const followups = extractFollowupsFromContent(content);
+
+    return res.json({ content, followups });
   } catch (err) {
     console.error(err.response?.data || err.message);
     const status = err.response?.status || 500;

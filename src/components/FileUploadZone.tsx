@@ -3,17 +3,26 @@ import { UploadCloud } from "lucide-react";
 
 type FileUploadZoneProps = {
   onFileUpload: (file: File) => void;
+  onUploadComplete?: () => void;
   fullScreen?: boolean;
 };
 
-const FileUploadZone = ({ onFileUpload, fullScreen = false }: FileUploadZoneProps) => {
+const FileUploadZone = ({ onFileUpload, onUploadComplete, fullScreen = false }: FileUploadZoneProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = (file: File) => {
+    onFileUpload(file);
+    onUploadComplete?.();
+  };
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      onFileUpload(e.dataTransfer.files[0]);
-    }
+    const files = Array.from(e.dataTransfer.files);
+    files.forEach(file => {
+      if (file.type === "application/pdf") {
+        handleFileUpload(file);
+      }
+    });
   };
 
   const handleClick = () => {
@@ -21,9 +30,12 @@ const FileUploadZone = ({ onFileUpload, fullScreen = false }: FileUploadZoneProp
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      onFileUpload(e.target.files[0]);
-    }
+    const files = Array.from(e.target.files || []);
+    files.forEach(file => {
+      if (file.type === "application/pdf") {
+        handleFileUpload(file);
+      }
+    });
   };
 
   return (
@@ -38,11 +50,12 @@ const FileUploadZone = ({ onFileUpload, fullScreen = false }: FileUploadZoneProp
       onClick={handleClick}
     >
       <UploadCloud size={40} className="text-blue-400 mb-2" />
-      <p className="text-white">Drag & drop a PDF here, or click to select</p>
+      <p className="text-white">Drag & drop PDFs here, or click to select</p>
       <input
         ref={inputRef}
         type="file"
         accept="application/pdf"
+        multiple
         className="hidden"
         onChange={handleChange}
       />

@@ -8,6 +8,9 @@ pnpm-debug.log*
 lerna-debug.log*
 
 # Environment variables
+.env
+*.env
+.env.*
 ./server/.env
 .env
 .env.local

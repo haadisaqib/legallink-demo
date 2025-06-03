@@ -12,6 +12,7 @@ import ChildAccountCard from '../components/dashboard/ChildAccountCard';
 import BillingHistory from '../components/dashboard/BillingHistory';
 import UsageAnalytics from '../components/dashboard/UsageAnalytics';
 import CreateChildAccountModal from '../components/dashboard/CreateChildAccountModal';
+import ProfileDropdown from '../components/dashboard/ProfileDropdown';
 
 interface ChildAccount {
   id: string;
@@ -93,6 +94,11 @@ const Dashboard: React.FC = () => {
     console.log('Creating child account for:', email);
   };
 
+  const handleSignOut = () => {
+    // Handle sign out
+    console.log('Signing out...');
+  };
+
   return (
     <div className="min-h-screen bg-gray-950">
       {/* Header */}
@@ -100,13 +106,16 @@ const Dashboard: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-            <button 
-              onClick={() => setIsCreateModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              <Plus size={20} />
-              Create Child Account
-            </button>
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={() => setIsCreateModalOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <Plus size={20} />
+                Create Child Account
+              </button>
+              <ProfileDropdown onSignOut={handleSignOut} />
+            </div>
           </div>
         </div>
       </header>

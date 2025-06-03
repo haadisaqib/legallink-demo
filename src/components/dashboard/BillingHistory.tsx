@@ -1,4 +1,5 @@
 import React from 'react';
+import { Plus } from 'lucide-react';
 
 interface BillingRecord {
   date: string;
@@ -9,13 +10,24 @@ interface BillingRecord {
 
 interface BillingHistoryProps {
   records: BillingRecord[];
+  onAddClick?: () => void;
 }
 
-const BillingHistory: React.FC<BillingHistoryProps> = ({ records }) => {
+const BillingHistory: React.FC<BillingHistoryProps> = ({ records, onAddClick }) => {
   return (
     <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl border border-gray-800">
-      <div className="p-6 border-b border-gray-800">
+      <div className="p-6 border-b border-gray-800 flex items-center justify-between">
         <h2 className="text-xl font-semibold text-white">Billing History</h2>
+        {onAddClick && (
+          <button
+            onClick={onAddClick}
+            className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            title="Add Payment Method"
+          >
+            <Plus size={18} />
+            Add
+          </button>
+        )}
       </div>
       <div className="p-6">
         <div className="space-y-4">

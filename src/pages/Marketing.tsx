@@ -1,12 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import TypewriterText from '../components/TypewriterText';
 import AnimatedBackground from '../components/AnimatedBackground';
 import TestimonialCarousel from '../components/TestimonialCarousel';
 import Footer from '../components/Footer';
+import ContactUsModal from '../components/ContactUsModal';
 import { scrollToSection } from '../utils/scroll';
 
 const Marketing: React.FC = () => {
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 relative overflow-hidden">
       <AnimatedBackground />
@@ -285,9 +288,10 @@ const Marketing: React.FC = () => {
 
         {/* Contact Section */}
         <div id="contact" className="pt-24">
-          <Footer />
+          <Footer onContactClick={() => setIsContactModalOpen(true)} />
         </div>
       </div>
+      <ContactUsModal isOpen={isContactModalOpen} onClose={() => setIsContactModalOpen(false)} />
     </div>
   );
 };

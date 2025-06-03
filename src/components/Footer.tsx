@@ -1,7 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-const Footer: React.FC = () => {
+interface FooterProps {
+  onContactClick?: () => void;
+}
+
+const Footer: React.FC<FooterProps> = ({ onContactClick }) => {
   return (
     <footer className="bg-gray-900/50 backdrop-blur-sm border-t border-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -76,9 +80,19 @@ const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/contact" className="text-gray-400 hover:text-white transition-colors">
-                  Contact Us
-                </Link>
+                {onContactClick ? (
+                  <button
+                    type="button"
+                    onClick={onContactClick}
+                    className="text-gray-400 hover:text-white transition-colors bg-transparent border-none outline-none cursor-pointer p-0"
+                  >
+                    Contact Us
+                  </button>
+                ) : (
+                  <Link to="/contact" className="text-gray-400 hover:text-white transition-colors">
+                    Contact Us
+                  </Link>
+                )}
               </li>
             </ul>
           </div>

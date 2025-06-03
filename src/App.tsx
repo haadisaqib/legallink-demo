@@ -9,6 +9,8 @@ import MainLayout from "./pages/MainLayout";
 import Marketing from "./pages/Marketing";
 import Dashboard from "./pages/Dashboard";
 import Billing from "./pages/Billing";
+import NotFound from "./pages/NotFound";
+import About from "./pages/About";
 
 function App() {
   return (
@@ -20,7 +22,8 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/billing" element={<Billing />} />
         <Route path="/demo" element={<MainLayout />}></Route>
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="/about" element={<About />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
   );

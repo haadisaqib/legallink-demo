@@ -13,6 +13,7 @@ import BillingHistory from '../components/dashboard/BillingHistory';
 import UsageAnalytics from '../components/dashboard/UsageAnalytics';
 import CreateChildAccountModal from '../components/dashboard/CreateChildAccountModal';
 import ProfileDropdown from '../components/dashboard/ProfileDropdown';
+import AddPaymentMethodModal from '../components/dashboard/AddPaymentMethodModal';
 
 interface ChildAccount {
   id: string;
@@ -24,6 +25,7 @@ interface ChildAccount {
 
 const Dashboard: React.FC = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isAddPaymentModalOpen, setIsAddPaymentModalOpen] = useState(false);
   const [childAccounts, setChildAccounts] = useState<ChildAccount[]>([
     {
       id: '1',
@@ -146,7 +148,7 @@ const Dashboard: React.FC = () => {
 
         {/* Billing and Usage Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <BillingHistory records={billingRecords} />
+          <BillingHistory records={billingRecords} onAddClick={() => setIsAddPaymentModalOpen(true)} />
           <UsageAnalytics features={usageFeatures} />
         </div>
       </main>
@@ -157,6 +159,7 @@ const Dashboard: React.FC = () => {
         onClose={() => setIsCreateModalOpen(false)}
         onSubmit={handleCreateChildAccount}
       />
+      <AddPaymentMethodModal isOpen={isAddPaymentModalOpen} onClose={() => setIsAddPaymentModalOpen(false)} />
     </div>
   );
 };

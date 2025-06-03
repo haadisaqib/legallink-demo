@@ -19,6 +19,7 @@ function App() {
         <Route path="/app/*" element={<MainLayout />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/billing" element={<Billing />} />
+        <Route path="/demo" element={<MainLayout />}></Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>

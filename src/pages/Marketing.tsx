@@ -93,10 +93,10 @@ const Marketing: React.FC = () => {
                   Sign Up
                 </Link>
                 <Link
-                  to="#features"
+                  to={"/demo"}
                   className="px-8 py-4 text-lg font-medium rounded-lg bg-gray-800 text-white hover:bg-gray-700 transition-all duration-300 border border-gray-700"
                 >
-                  Learn More
+                  Try Demo
                 </Link>
               </div>
             </div>

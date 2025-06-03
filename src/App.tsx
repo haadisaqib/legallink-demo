@@ -7,6 +7,7 @@ import {
 import AuthPage from "./pages/AuthPage";
 import MainLayout from "./pages/MainLayout";
 import Marketing from "./pages/Marketing";
+import Dashboard from "./pages/Dashboard";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="/" element={<Marketing />} />
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/app/*" element={<MainLayout />} />
+        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>

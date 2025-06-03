@@ -1,5 +1,6 @@
-import { useRef } from "react";
-import { UploadCloud } from "lucide-react";
+// src/components/FileUploadZone.tsx
+import React, { useRef } from 'react';
+import { UploadCloud } from 'lucide-react';
 
 type FileUploadZoneProps = {
   onFileUpload: (file: File) => void;
@@ -7,47 +8,37 @@ type FileUploadZoneProps = {
   fullScreen?: boolean;
 };
 
-const FileUploadZone = ({ onFileUpload, onUploadComplete, fullScreen = false }: FileUploadZoneProps) => {
+export default function FileUploadZone({
+  onFileUpload,
+  onUploadComplete,
+  fullScreen = false,
+}: FileUploadZoneProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileUpload = (file: File) => {
-    onFileUpload(file);
+  const handleFiles = (files: FileList | File[]) => {
+    Array.from(files).forEach((file) => {
+      if (file.type === 'application/pdf') {
+        onFileUpload(file);
+      }
+    });
     onUploadComplete?.();
-  };
-
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    const files = Array.from(e.dataTransfer.files);
-    files.forEach(file => {
-      if (file.type === "application/pdf") {
-        handleFileUpload(file);
-      }
-    });
-  };
-
-  const handleClick = () => {
-    inputRef.current?.click();
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    files.forEach(file => {
-      if (file.type === "application/pdf") {
-        handleFileUpload(file);
-      }
-    });
   };
 
   return (
     <div
-      className={
-        fullScreen
-          ? "w-full h-full flex flex-col items-center justify-center border-2 border-dashed border-blue-400 rounded-lg p-8 cursor-pointer bg-gray-900 hover:bg-blue-900 transition shadow-lg"
-          : "max-w-md mx-auto flex flex-col items-center justify-center border-2 border-dashed border-blue-400 rounded-lg p-8 my-8 cursor-pointer bg-gray-900 hover:bg-blue-900 transition shadow-lg"
-      }
-      onDrop={handleDrop}
-      onDragOver={e => e.preventDefault()}
-      onClick={handleClick}
+      className={`
+        ${fullScreen ? 'w-full h-full' : 'max-w-md mx-auto my-8'}
+        flex flex-col items-center justify-center
+        border-2 border-dashed border-blue-400
+        rounded-lg p-8 cursor-pointer
+        bg-gray-900 hover:bg-blue-900 transition shadow-lg
+      `}
+      onDrop={(e) => {
+        e.preventDefault();
+        handleFiles(e.dataTransfer.files);
+      }}
+      onDragOver={(e) => e.preventDefault()}
+      onClick={() => inputRef.current?.click()}
     >
       <UploadCloud size={40} className="text-blue-400 mb-2" />
       <p className="text-white">Drag & drop PDFs here, or click to select</p>
@@ -57,10 +48,8 @@ const FileUploadZone = ({ onFileUpload, onUploadComplete, fullScreen = false }: 
         accept="application/pdf"
         multiple
         className="hidden"
-        onChange={handleChange}
+        onChange={(e) => e.target.files && handleFiles(e.target.files)}
       />
     </div>
   );
-};
-
-export default FileUploadZone; 
+}

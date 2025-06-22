@@ -1,4 +1,4 @@
-import { Menu, ChevronLeft, MessageCircle, FileText, Plus } from "lucide-react";
+import { Menu, ChevronLeft, FileText, Plus } from "lucide-react";
 import { useRef } from "react";
 
 interface PDFDocument {

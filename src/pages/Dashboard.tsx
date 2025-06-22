@@ -26,7 +26,7 @@ interface ChildAccount {
 const Dashboard: React.FC = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isAddPaymentModalOpen, setIsAddPaymentModalOpen] = useState(false);
-  const [childAccounts, setChildAccounts] = useState<ChildAccount[]>([
+  const [_childAccounts, _setChildAccounts] = useState<ChildAccount[]>([
     {
       id: '1',
       name: 'Law Firm A',
@@ -136,7 +136,7 @@ const Dashboard: React.FC = () => {
             <h2 className="text-xl font-semibold text-white">Child Accounts</h2>
           </div>
           <div className="divide-y divide-gray-800">
-            {childAccounts.map((account) => (
+            {_childAccounts.map((account) => (
               <ChildAccountCard
                 key={account.id}
                 account={account}

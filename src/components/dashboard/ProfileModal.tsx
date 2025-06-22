@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { X, User, Building, Mail, Phone, LogOut, Shield } from 'lucide-react';
+import { X, User, Building, Mail, LogOut, Shield } from 'lucide-react';
 
 interface ProfileModalProps {
   isOpen: boolean;

@@ -2,7 +2,6 @@ import {
   BrowserRouter as Router,
   Routes,
   Route,
-  Navigate,
 } from "react-router-dom";
 import AuthPage from "./pages/AuthPage";
 import MainLayout from "./pages/MainLayout";

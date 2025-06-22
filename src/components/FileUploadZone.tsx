@@ -1,5 +1,5 @@
 // src/components/FileUploadZone.tsx
-import React, { useRef } from 'react';
+import { useRef } from 'react';
 import { UploadCloud } from 'lucide-react';
 
 type FileUploadZoneProps = {

@@ -29,16 +29,22 @@ const AnimatedBackground: React.FC = () => {
       color: string;
 
       constructor() {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
+        this.x = 0;
+        this.y = 0;
         this.size = Math.random() * 2 + 0.5;
         this.speedX = Math.random() * 0.5 - 0.25;
         this.speedY = Math.random() * 0.5 - 0.25;
         this.opacity = Math.random() * 0.5 + 0.2;
         this.color = `rgba(59, 130, 246, ${this.opacity})`; // Blue color matching the theme
+        
+        if (canvas) {
+          this.x = Math.random() * canvas.width;
+          this.y = Math.random() * canvas.height;
+        }
       }
 
       update() {
+        if (!canvas) return;
         this.x += this.speedX;
         this.y += this.speedY;
 

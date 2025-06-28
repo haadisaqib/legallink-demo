@@ -19,7 +19,6 @@ import { RequireAuth } from "./components/RequireAuth";
 
 function App() {
   return (
-    // The Authenticator.Provider is still necessary for the useAuthenticator hook to work
     <Authenticator.Provider>
       <Router>
         <Routes>

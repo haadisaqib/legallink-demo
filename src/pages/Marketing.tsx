@@ -59,15 +59,9 @@ const Marketing: React.FC = () => {
               <div className="flex items-center space-x-4">
                 <Link
                   to="/auth"
-                  className="text-gray-300 hover:text-white px-3 py-2 text-sm font-medium transition-colors duration-200"
-                >
-                  Sign In
-                </Link>
-                <Link
-                  to="/auth"
                   className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium transition-all duration-300 shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40"
                 >
-                  Sign Up
+                  Sign In / Sign Up
                 </Link>
               </div>
             </div>

@@ -43,7 +43,6 @@ const AuthPage = () => {
   const tabParam = searchParams.get('tab');
   const initialTab = tabParam === 'signUp' ? 'signUp' : 'signIn';
   const [authTab] = useState<'signIn' | 'signUp'>(initialTab);
-  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     if (route === "authenticated") {

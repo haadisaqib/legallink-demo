@@ -1,5 +1,8 @@
 // src/layouts/MainLayout.tsx
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuthenticator } from '@aws-amplify/ui-react';
+import { LogOut } from 'lucide-react';
 import Sidebar         from '../components/Sidebar';
 import FileUploadZone  from '../components/FileUploadZone';
 import AIToolbar       from '../components/AIToolbar';
@@ -16,6 +19,8 @@ const MainLayout = () => {
   const [pdfs, setPdfs]                 = useState<PDFDocument[]>([]);
   const [selectedPdfId, setSelectedPdf] = useState<string | null>(null);
   const [sidebarCollapsed, setSidebar]  = useState(false);
+  const { signOut } = useAuthenticator();
+  const navigate = useNavigate();
 
   const handleFileUpload = (file: File) => {
     const newPdf: PDFDocument = {
@@ -27,6 +32,15 @@ const MainLayout = () => {
     setPdfs((p) => [...p, newPdf]);
     setSelectedPdf(newPdf.id);
     setSidebar(true);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate('/auth');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
   };
 
   const selectedPdf = pdfs.find((p) => p.id === selectedPdfId) || null;
@@ -43,6 +57,17 @@ const MainLayout = () => {
       />
 
       <main className="flex-1 flex flex-col md:flex-row overflow-hidden">
+        {/* Logout Button */}
+        <div className="absolute top-4 right-4 z-10">
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors duration-200 shadow-lg"
+          >
+            <LogOut size={16} />
+            Logout
+          </button>
+        </div>
+
         <div className="flex-1 flex items-center justify-center h-[calc(100vh)] md:h-screen">
           {pdfs.length === 0 ? (
             <FileUploadZone

@@ -1,8 +1,5 @@
 // src/layouts/MainLayout.tsx
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuthenticator } from '@aws-amplify/ui-react';
-import { LogOut } from 'lucide-react';
 import Sidebar         from '../components/Sidebar';
 import FileUploadZone  from '../components/FileUploadZone';
 import AIToolbar       from '../components/AIToolbar';
@@ -19,8 +16,7 @@ const MainLayout = () => {
   const [pdfs, setPdfs]                 = useState<PDFDocument[]>([]);
   const [selectedPdfId, setSelectedPdf] = useState<string | null>(null);
   const [sidebarCollapsed, setSidebar]  = useState(false);
-  const { signOut } = useAuthenticator();
-  const navigate = useNavigate();
+
 
   const handleFileUpload = (file: File) => {
     const newPdf: PDFDocument = {
@@ -32,15 +28,6 @@ const MainLayout = () => {
     setPdfs((p) => [...p, newPdf]);
     setSelectedPdf(newPdf.id);
     setSidebar(true);
-  };
-
-  const handleLogout = async () => {
-    try {
-      await signOut();
-      navigate('/auth');
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
   };
 
   const selectedPdf = pdfs.find((p) => p.id === selectedPdfId) || null;

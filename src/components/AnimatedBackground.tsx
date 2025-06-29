@@ -35,7 +35,7 @@ const AnimatedBackground: React.FC = () => {
         this.speedX = Math.random() * 0.5 - 0.25;
         this.speedY = Math.random() * 0.5 - 0.25;
         this.opacity = Math.random() * 0.5 + 0.2;
-        this.color = `rgba(59, 130, 246, ${this.opacity})`; // Blue color matching the theme
+        this.color = `rgba(56, 189, 248, ${this.opacity})`; // Accent color
         
         if (canvas) {
           this.x = Math.random() * canvas.width;
@@ -90,7 +90,7 @@ const AnimatedBackground: React.FC = () => {
         ctx.lineTo(x, y);
       }
 
-      ctx.strokeStyle = 'rgba(59, 130, 246, 0.1)';
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.1)';
       ctx.lineWidth = 2;
       ctx.stroke();
 
@@ -111,7 +111,7 @@ const AnimatedBackground: React.FC = () => {
 
           if (distance < 100) {
             ctx.beginPath();
-            ctx.strokeStyle = `rgba(59, 130, 246, ${0.1 * (1 - distance / 100)})`;
+            ctx.strokeStyle = `rgba(56, 189, 248, ${0.1 * (1 - distance / 100)})`;
             ctx.lineWidth = 0.5;
             ctx.moveTo(p1.x, p1.y);
             ctx.lineTo(p2.x, p2.y);

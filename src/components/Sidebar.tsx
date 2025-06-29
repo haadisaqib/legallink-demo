@@ -1,5 +1,7 @@
 import { Menu, ChevronLeft, FileText, Plus } from "lucide-react";
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import ProfileCard from "./dashboard/ProfileCard";
+import ProfileModal from "./dashboard/ProfileModal";
 
 interface PDFDocument {
   id: string;
@@ -17,6 +19,8 @@ type SidebarProps = {
 
 const Sidebar = ({ collapsed, onCollapse, pdfs, selectedPdfId, onPdfSelect, onFileSelect }: SidebarProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [profileImg, setProfileImg] = useState<string | null>(null);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -78,6 +82,31 @@ const Sidebar = ({ collapsed, onCollapse, pdfs, selectedPdfId, onPdfSelect, onFi
           ))}
         </ul>
       </nav>
+      {/* Profile Card or Avatar at the bottom */}
+      <div className="p-4 border-t border-gray-800 mt-auto flex justify-center">
+        {collapsed ? (
+          <button
+            className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-600 text-white font-bold text-lg border-2 border-blue-400 hover:opacity-80 transition-all duration-300 aspect-square p-0"
+            onClick={() => setProfileOpen(true)}
+            aria-label="Open profile"
+          >
+            {profileImg ? (
+              <img
+                src={profileImg}
+                alt="Profile"
+                className="w-10 h-10 rounded-full object-cover aspect-square transition-all duration-300"
+              />
+            ) : (
+              "JD"
+            )}
+          </button>
+        ) : (
+          <div className="w-full transition-all duration-300">
+            <ProfileCard onClick={() => setProfileOpen(true)} />
+          </div>
+        )}
+      </div>
+      <ProfileModal open={profileOpen} onClose={() => setProfileOpen(false)} profileImg={profileImg} setProfileImg={setProfileImg} />
     </aside>
   );
 };

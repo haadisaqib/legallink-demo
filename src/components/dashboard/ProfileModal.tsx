@@ -1,113 +1,95 @@
-import React, { useEffect } from 'react';
-import { X, User, Building, Mail, LogOut, Shield } from 'lucide-react';
+import React, { useRef } from "react";
+import { Camera } from "lucide-react";
 
 interface ProfileModalProps {
-  isOpen: boolean;
+  open: boolean;
   onClose: () => void;
-  onSignOut: () => void;
+  profileImg: string | null;
+  setProfileImg: (img: string | null) => void;
 }
 
-const ProfileModal: React.FC<ProfileModalProps> = ({
-  isOpen,
-  onClose,
-  onSignOut
-}) => {
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [isOpen]);
+const user = {
+  name: "Jane Doe",
+  lawFirm: "Doe & Associates",
+  email: "jane.doe@example.com",
+  phone: "+1 555-123-4567",
+};
 
-  if (!isOpen) return null;
+const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, profileImg, setProfileImg }) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  if (!open) return null;
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        setProfileImg(ev.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const initials = user.name.split(' ').map(n => n[0]).join('');
+
+  const handleLogout = () => {
+    // Placeholder: just close the modal for now
+    onClose();
+  };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
-      {/* Backdrop */}
-      <div 
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm"
-        onClick={onClose}
-      />
-
-      {/* Modal */}
-      <div className="relative bg-gray-900 rounded-xl border border-gray-800 w-full max-w-md my-8">
-        {/* Header - Sticky */}
-        <div className="sticky top-0 z-10 flex items-center justify-between p-6 border-b border-gray-800 bg-gray-900 rounded-t-xl">
-          <h2 className="text-xl font-semibold text-white">
-            Account Profile
-          </h2>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
-          >
-            <X className="w-5 h-5 text-gray-400" />
-          </button>
-        </div>
-
-        {/* Content - Scrollable */}
-        <div className="p-6 max-h-[calc(100vh-8rem)] overflow-y-auto">
-          {/* Profile Header */}
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
-              <User className="w-8 h-8 text-white" />
-            </div>
-            <div className="min-w-0">
-              <h3 className="text-xl font-semibold text-white truncate">John Smith</h3>
-              <p className="text-gray-400 truncate">Administrator</p>
-            </div>
-          </div>
-
-          {/* Account Details */}
-          <div className="space-y-4">
-            <div className="p-4 bg-gray-800/50 rounded-lg">
-              <div className="flex items-center gap-3 mb-3">
-                <Building className="w-5 h-5 text-blue-500 flex-shrink-0" />
-                <h4 className="text-white font-medium truncate">Company Information</h4>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+      <div className="bg-gray-900 rounded-lg shadow-lg p-6 w-full max-w-sm relative flex flex-col border border-gray-800" style={{ minHeight: 400 }}>
+        <button
+          className="absolute top-2 right-2 text-gray-400 hover:text-white"
+          onClick={onClose}
+          aria-label="Close profile modal"
+        >
+          ×
+        </button>
+        <div className="flex flex-col items-center gap-2 flex-1">
+          <div className="relative mb-2">
+            {profileImg ? (
+              <img
+                src={profileImg}
+                alt="Profile"
+                className="w-16 h-16 rounded-full object-cover border-2 border-blue-600"
+              />
+            ) : (
+              <div className="w-16 h-16 flex items-center justify-center rounded-full bg-blue-600 text-white font-bold text-2xl">
+                {initials}
               </div>
-              <div className="space-y-2 text-sm">
-                <p className="text-gray-400 truncate">LegalLink Enterprise</p>
-                <p className="text-gray-400 truncate">Enterprise Plan</p>
-                <p className="text-gray-400 truncate">Account ID: ENTERPRISE-1234</p>
-              </div>
-            </div>
-
-            <div className="p-4 bg-gray-800/50 rounded-lg">
-              <div className="flex items-center gap-3 mb-3">
-                <Mail className="w-5 h-5 text-blue-500 flex-shrink-0" />
-                <h4 className="text-white font-medium truncate">Contact Information</h4>
-              </div>
-              <div className="space-y-2 text-sm">
-                <p className="text-gray-400 truncate">john.smith@legallink.com</p>
-                <p className="text-gray-400 truncate">+1 (555) 123-4567</p>
-              </div>
-            </div>
-
-            <div className="p-4 bg-gray-800/50 rounded-lg">
-              <div className="flex items-center gap-3 mb-3">
-                <Shield className="w-5 h-5 text-blue-500 flex-shrink-0" />
-                <h4 className="text-white font-medium truncate">Security</h4>
-              </div>
-              <div className="space-y-2 text-sm">
-                <p className="text-gray-400 truncate">Last login: 2 hours ago</p>
-                <p className="text-gray-400 truncate">2FA: Enabled</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Footer - Sticky */}
-          <div className="sticky bottom-0 mt-8 pt-6 border-t border-gray-800 bg-gray-900">
+            )}
             <button
-              onClick={onSignOut}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 transition-colors"
+              className="absolute bottom-0 right-0 bg-gray-800 rounded-full p-1 border border-gray-700 shadow hover:bg-gray-700"
+              onClick={() => fileInputRef.current?.click()}
+              aria-label="Upload profile picture"
+              type="button"
+              style={{ lineHeight: 0 }}
             >
-              <LogOut size={18} />
-              Sign Out
+              <Camera className="w-4 h-4 text-blue-400" />
             </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageChange}
+            />
           </div>
+          <div className="font-semibold text-lg mt-2 mb-1 text-white">{user.name}</div>
+          <div className="text-gray-300">{user.lawFirm}</div>
+          <div className="text-gray-400 text-sm mt-2">{user.email}</div>
+          <div className="text-gray-400 text-sm">{user.phone}</div>
+        </div>
+        <div className="mt-6 pt-4 border-t border-gray-800">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-semibold"
+          >
+            Log Out
+          </button>
         </div>
       </div>
     </div>

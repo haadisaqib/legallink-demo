@@ -57,17 +57,6 @@ const MainLayout = () => {
       />
 
       <main className="flex-1 flex flex-col md:flex-row overflow-hidden">
-        {/* Logout Button */}
-        <div className="absolute top-4 right-4 z-10">
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors duration-200 shadow-lg"
-          >
-            <LogOut size={16} />
-            Logout
-          </button>
-        </div>
-
         <div className="flex-1 flex items-center justify-center h-[calc(100vh)] md:h-screen">
           {pdfs.length === 0 ? (
             <FileUploadZone

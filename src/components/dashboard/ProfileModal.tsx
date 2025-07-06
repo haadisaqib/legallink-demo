@@ -1,5 +1,6 @@
 import React, { useRef } from "react";
 import { Camera } from "lucide-react";
+import { signOut } from '@aws-amplify/auth';
 
 interface ProfileModalProps {
   open: boolean;
@@ -33,9 +34,15 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, profileImg, 
 
   const initials = user.name.split(' ').map(n => n[0]).join('');
 
-  const handleLogout = () => {
-    // Placeholder: just close the modal for now
-    onClose();
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      // The modal will close automatically when the user is redirected
+    } catch (error) {
+      console.error('Error signing out:', error);
+      // Still close the modal even if there's an error
+      onClose();
+    }
   };
 
   return (

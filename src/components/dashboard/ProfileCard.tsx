@@ -1,18 +1,22 @@
 import React from "react";
 import { ChevronDown } from "lucide-react";
 
-interface ProfileCardProps {
-  onClick: () => void;
+interface UserProfile {
+  username?: string;
+  name?: string;
+  email?: string;
+  website?: string;
+  'custom:FirmName'?: string;
 }
 
-const ProfileCard: React.FC<ProfileCardProps> = ({ onClick }) => {
-  // Placeholder user info
-  const user = {
-    name: "Jane Doe",
-    lawFirm: "Doe & Associates",
-    email: "jane.doe@example.com",
-  };
-  const initials = user.name.split(' ').map(n => n[0]).join('');
+interface ProfileCardProps {
+  onClick: () => void;
+  user: UserProfile | null;
+  profileImg: string | null;
+}
+
+const ProfileCard: React.FC<ProfileCardProps> = ({ onClick, user, profileImg }) => {
+  const initials = user?.name?.split(' ').map(n => n[0]).join('') || user?.username?.charAt(0).toUpperCase() || 'U';
 
   return (
     <button
@@ -20,12 +24,20 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ onClick }) => {
       onClick={onClick}
       aria-label="Open profile"
     >
-      <div className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-600 text-white font-bold text-lg">
-        {initials}
+      <div className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-600 text-white font-bold text-lg overflow-hidden">
+        {profileImg ? (
+          <img
+            src={profileImg}
+            alt="Profile"
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          initials
+        )}
       </div>
       <div className="flex-1 text-left">
-        <div className="font-semibold text-white">{user.name}</div>
-        <div className="text-xs text-gray-400">{user.lawFirm}</div>
+        <div className="font-semibold text-white">{user?.name || 'Unnamed User'}</div>
+        <div className="text-xs text-gray-400">{user?.['custom:FirmName'] || 'No Firm Name'}</div>
       </div>
       <ChevronDown className="text-gray-400" size={20} />
     </button>

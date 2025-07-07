@@ -4,6 +4,7 @@ import Sidebar         from '../components/Sidebar';
 import FileUploadZone  from '../components/FileUploadZone';
 import AIToolbar       from '../components/AIToolbar';
 import { FileText }    from 'lucide-react';
+import { fetchUserAttributes } from '@aws-amplify/auth';
 
 interface PDFDocument {
   id: string;
@@ -17,17 +18,53 @@ const MainLayout = () => {
   const [selectedPdfId, setSelectedPdf] = useState<string | null>(null);
   const [sidebarCollapsed, setSidebar]  = useState(false);
 
+  // API Gateway base URL from environment variable
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
-  const handleFileUpload = (file: File) => {
-    const newPdf: PDFDocument = {
-      id: crypto.randomUUID(),
-      file,
-      url: URL.createObjectURL(file),
-      name: file.name,
-    };
-    setPdfs((p) => [...p, newPdf]);
-    setSelectedPdf(newPdf.id);
-    setSidebar(true);
+  const handleFileUpload = async (file: File) => {
+    try {
+      // Get current user for the upload
+      const attributes = await fetchUserAttributes();
+      const userEmail = attributes.email;
+
+      if (!userEmail) {
+        alert("Could not upload document: user email not found.");
+        return;
+      }
+
+      // Upload the document to the API
+      const uploadUrl = `${apiBaseUrl}/uploadDocuments?userEmail=${encodeURIComponent(userEmail)}&fileName=${encodeURIComponent(file.name)}`;
+      console.log(`Uploading document to: ${uploadUrl}`);
+
+      const uploadResponse = await fetch(uploadUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': file.type },
+        body: file,
+      });
+
+      if (!uploadResponse.ok) {
+        const result = await uploadResponse.json();
+        throw new Error(result.message || 'Failed to upload document.');
+      }
+
+      console.log('Document upload successful');
+
+      // Create local PDF document object for UI
+      const newPdf: PDFDocument = {
+        id: crypto.randomUUID(),
+        file,
+        url: URL.createObjectURL(file),
+        name: file.name,
+      };
+      setPdfs((p) => [...p, newPdf]);
+      setSelectedPdf(newPdf.id);
+      setSidebar(true);
+
+    } catch (error) {
+      console.error('Error uploading document:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Upload failed';
+      alert(`Document upload failed: ${errorMessage}`);
+    }
   };
 
   const selectedPdf = pdfs.find((p) => p.id === selectedPdfId) || null;

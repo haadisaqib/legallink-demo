@@ -33,7 +33,7 @@ const Sidebar = ({ collapsed, onCollapse, pdfs, selectedPdfId, onPdfSelect, onFi
   const [user, setUser] = useState<UserProfile | null>(null);
 
   // API Gateway base URL
-  const apiBaseUrl = "https://hmnrbr18vj.execute-api.us-east-1.amazonaws.com/prod";
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
   // Fetch user data on component mount
   useEffect(() => {

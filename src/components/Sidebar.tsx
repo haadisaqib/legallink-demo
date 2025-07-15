@@ -31,6 +31,7 @@ const Sidebar = ({ collapsed, onCollapse, pdfs, selectedPdfId, onPdfSelect, onFi
   const [profileOpen, setProfileOpen] = useState(false);
   const [profileImg, setProfileImg] = useState<string | null>(null);
   const [user, setUser] = useState<UserProfile | null>(null);
+  const [documents, setDocuments] = useState<{ name: string, key: string }[]>([]);
 
   // API Gateway base URL
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
@@ -70,6 +71,29 @@ const Sidebar = ({ collapsed, onCollapse, pdfs, selectedPdfId, onPdfSelect, onFi
     };
     fetchUserDataAndImage();
   }, []);
+
+  // Fetch document names on mount
+  useEffect(() => {
+    const fetchDocuments = async () => {
+      try {
+        const session = await fetchAuthSession();
+        const jwtToken = session.tokens?.idToken?.toString() || '';
+        const response = await fetch(`${apiBaseUrl}/getdocumentnames`, {
+          headers: { 'Authorization': jwtToken } as Record<string, string>
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setDocuments(data.documents);
+        } else {
+          setDocuments([]);
+        }
+      } catch (error) {
+        console.error('Error fetching document names:', error);
+        setDocuments([]);
+      }
+    };
+    fetchDocuments();
+  }, [apiBaseUrl]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -119,6 +143,7 @@ const Sidebar = ({ collapsed, onCollapse, pdfs, selectedPdfId, onPdfSelect, onFi
       />
       <nav className="flex-1 overflow-y-auto">
         <ul className="space-y-1 mt-2">
+          {/* Render uploaded PDFs (local session) */}
           {pdfs.map((pdf) => (
             <li key={pdf.id}>
               <button
@@ -129,6 +154,20 @@ const Sidebar = ({ collapsed, onCollapse, pdfs, selectedPdfId, onPdfSelect, onFi
               >
                 <FileText className="mr-2 text-blue-400" size={18} />
                 {!collapsed && <span className="truncate text-white">{pdf.name}</span>}
+              </button>
+            </li>
+          ))}
+          {/* Render documents from backend */}
+          {documents.map((doc) => (
+            <li key={doc.key}>
+              <button
+                onClick={() => onPdfSelect(doc.key)}
+                className={`flex items-center w-full px-4 py-2 text-left rounded transition text-white ${
+                  selectedPdfId === doc.key ? "bg-blue-800" : "hover:bg-blue-800"
+                } ${collapsed ? "justify-center" : ""}`}
+              >
+                <FileText className="mr-2 text-green-400" size={18} />
+                {!collapsed && <span className="truncate text-white">{doc.name}</span>}
               </button>
             </li>
           ))}

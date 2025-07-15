@@ -2,6 +2,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { FileText, X } from 'lucide-react';
+import { fetchAuthSession } from '@aws-amplify/auth';
 
 const BACKEND_API_URL = 'http://localhost:4000/api/chat';
 
@@ -96,6 +97,14 @@ export default function AIToolbar({ pdfFile, allPdfs }: AIToolbarProps) {
 
     setLoading(true);
 
+    let jwtToken = '';
+    try {
+      const session = await fetchAuthSession();
+      jwtToken = session.tokens?.idToken?.toString() || '';
+    } catch (e) {
+      console.warn('No JWT token found for chat API request.');
+    }
+
     try {
       // build array of main + any mentioned
       const toSend = [
@@ -118,7 +127,10 @@ export default function AIToolbar({ pdfFile, allPdfs }: AIToolbarProps) {
       // call server
       const res = await fetch(BACKEND_API_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(jwtToken ? { 'Authorization': jwtToken } : {})
+        },
         body: JSON.stringify({
           prompt: userMsg,
           files: filesData,

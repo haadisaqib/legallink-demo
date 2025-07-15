@@ -1,6 +1,6 @@
 import { Menu, ChevronLeft, FileText, Plus } from "lucide-react";
 import { useRef, useState, useEffect } from "react";
-import { getCurrentUser, fetchUserAttributes } from '@aws-amplify/auth';
+import { getCurrentUser, fetchUserAttributes, fetchAuthSession } from '@aws-amplify/auth';
 import ProfileCard from "./dashboard/ProfileCard";
 import ProfileModal from "./dashboard/ProfileModal";
 
@@ -46,17 +46,21 @@ const Sidebar = ({ collapsed, onCollapse, pdfs, selectedPdfId, onPdfSelect, onFi
         setUser(currentUser);
 
         // 2. Fetch the profile image URL from our new endpoint
-        if (currentUser.email) {
-          const getImageUrl = `${apiBaseUrl}/getprofilepic?userEmail=${encodeURIComponent(currentUser.email)}`;
-          const response = await fetch(getImageUrl);
-          
-          if (response.ok) {
-            const data = await response.json();
-            setProfileImg(data.imageUrl);
-          } else {
-            // If no image is found (e.g., 404), clear the image
-            setProfileImg(null);
-          }
+        const getImageUrl = `${apiBaseUrl}/getprofilepic`;
+        const session = await fetchAuthSession();
+        const jwtToken = session.tokens?.idToken?.toString() || '';
+        const response = await fetch(getImageUrl, {
+          headers: {
+            'Authorization': jwtToken
+          } as Record<string, string>
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setProfileImg(data.imageUrl);
+        } else {
+          // If no image is found (e.g., 404), clear the image
+          setProfileImg(null);
         }
       } catch (error) {
         console.error("Error fetching user data or image:", error);

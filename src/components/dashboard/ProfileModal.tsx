@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import { Camera } from "lucide-react";
-import { signOut } from '@aws-amplify/auth';
+import { signOut, fetchAuthSession } from '@aws-amplify/auth';
 
 interface ProfileModalProps {
   open: boolean;
@@ -42,15 +42,34 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, profileImg, 
     reader.readAsDataURL(file);
 
     // Construct the upload URL
-    const uploadUrl = `${apiBaseUrl}/uploadprofilepic?userEmail=${encodeURIComponent(user.email)}`;
+    const session = await fetchAuthSession();
+    const jwtToken = session.tokens?.idToken?.toString() || '';
+    const uploadUrl = `${apiBaseUrl}/uploadprofilepic`;
     console.log(`Uploading to: ${uploadUrl}`);
 
     try {
       // Perform the upload
+      const base64Data = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          if (typeof reader.result === 'string') {
+            const base64 = reader.result.split(',')[1];
+            resolve(base64);
+          }
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const binary = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+
       const uploadResponse = await fetch(uploadUrl, {
         method: 'POST',
-        headers: { 'Content-Type': file.type },
-        body: file,
+        headers: {
+          'Content-Type': file.type,
+          'Authorization': jwtToken
+        },
+        body: binary,
       });
 
       if (!uploadResponse.ok) {
@@ -61,9 +80,12 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, profileImg, 
       console.log('Upload successful. Refreshing image...');
       
       // After a successful upload, fetch the new presigned URL to display the official image
-      // CORRECTED ENDPOINT PATH
-      const getImageUrl = `${apiBaseUrl}/getprofilepic?userEmail=${encodeURIComponent(user.email)}`;
-      const newImageResponse = await fetch(getImageUrl);
+      const getImageUrl = `${apiBaseUrl}/getprofilepic`;
+      const newImageResponse = await fetch(getImageUrl, {
+        headers: {
+          'Authorization': jwtToken
+        } as Record<string, string>
+      });
       if (newImageResponse.ok) {
         const data = await newImageResponse.json();
         setProfileImg(data.imageUrl); // Update with the new, official URL

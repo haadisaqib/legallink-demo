@@ -4,7 +4,7 @@ import Sidebar         from '../components/Sidebar';
 import FileUploadZone  from '../components/FileUploadZone';
 import AIToolbar       from '../components/AIToolbar';
 import { FileText }    from 'lucide-react';
-import { fetchUserAttributes } from '@aws-amplify/auth';
+import { fetchAuthSession } from '@aws-amplify/auth';
 
 interface PDFDocument {
   id: string;
@@ -24,22 +24,41 @@ const MainLayout = () => {
   const handleFileUpload = async (file: File) => {
     try {
       // Get current user for the upload
-      const attributes = await fetchUserAttributes();
-      const userEmail = attributes.email;
+      const session = await fetchAuthSession();
+      const jwtToken = session.tokens?.idToken?.toString() || '';
 
-      if (!userEmail) {
-        alert("Could not upload document: user email not found.");
+      if (!jwtToken) {
+        alert("Could not upload document: user token not found.");
         return;
       }
 
       // Upload the document to the API
-      const uploadUrl = `${apiBaseUrl}/uploadDocuments?userEmail=${encodeURIComponent(userEmail)}&fileName=${encodeURIComponent(file.name)}`;
+      const uploadUrl = `${apiBaseUrl}/uploadDocuments`;
       console.log(`Uploading document to: ${uploadUrl}`);
+
+      const base64Content = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          if (typeof reader.result === 'string') {
+            // Remove data URL prefix (e.g., "data:application/pdf;base64,")
+            const base64 = reader.result.split(',')[1];
+            resolve(base64);
+          }
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
 
       const uploadResponse = await fetch(uploadUrl, {
         method: 'POST',
-        headers: { 'Content-Type': file.type },
-        body: file,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': jwtToken
+        } as Record<string, string>,
+        body: JSON.stringify({
+          fileName: file.name,
+          content: base64Content
+        }),
       });
 
       if (!uploadResponse.ok) {

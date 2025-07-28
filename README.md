@@ -1,6 +1,50 @@
-# React + TypeScript + Vite
+# LegalLink Demo
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A React + TypeScript + Vite application for legal document processing and AI-powered legal assistance.
+
+## Setup
+
+This project uses **npm** as the package manager. Please use npm commands for all package management operations.
+
+### Prerequisites
+- Node.js (v18 or higher)
+- npm
+
+### Installation
+
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd legallink-demo
+```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Install server dependencies:
+```bash
+cd server
+npm install
+cd ..
+```
+
+### Development
+
+Start the development server:
+```bash
+npm run dev
+```
+
+Build for production:
+```bash
+npm run build
+```
+
+## Package Manager
+
+This project uses **npm** exclusively. Please do not use pnpm, yarn, or other package managers to avoid conflicts.
 
 Currently, two official plugins are available:
 

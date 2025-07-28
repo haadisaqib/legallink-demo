@@ -97,10 +97,15 @@ const AuthPage = () => {
                 },
                 {
                   type: "text",
-                  name: "custom:FirmName",
+                  name: "custom:firmName",
                   label: "Firm Name",
                   placeholder: "Enter your firm name",
                   required: true,
+                },
+                {
+                  type: "hidden",
+                  name: "custom:accountType",
+                  value: "parent",
                 },
               ] as any,
             }}

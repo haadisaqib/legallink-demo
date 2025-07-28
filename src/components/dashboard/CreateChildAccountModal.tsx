@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import { X, Mail, Send } from 'lucide-react';
+import { fetchAuthSession } from '@aws-amplify/auth';
 
 interface CreateChildAccountModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (email: string) => void;
 }
+
+// API Gateway base URL from environment variable
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
 const CreateChildAccountModal: React.FC<CreateChildAccountModalProps> = ({
   isOpen,
@@ -14,17 +18,62 @@ const CreateChildAccountModal: React.FC<CreateChildAccountModalProps> = ({
 }) => {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!email.trim()) {
+      setError('Please enter a valid email address');
+      return;
+    }
+
     setIsSubmitting(true);
-    onSubmit(email);
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false);
+    setError(null);
+
+    try {
+      // Get authentication token
+      const session = await fetchAuthSession();
+      const jwtToken = session.tokens?.idToken?.toString() || '';
+      
+      if (!jwtToken) {
+        throw new Error('Authentication token not found. Please log in again.');
+      }
+
+      // Make API call to create child account
+      const response = await fetch(`${apiBaseUrl}/create-child-account`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': jwtToken
+        },
+        body: JSON.stringify({
+          childEmail: email.trim()
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create child account');
+      }
+
+      const result = await response.json();
+      console.log('Child account creation successful:', result);
+
+      // Call the onSubmit callback with the email
+      onSubmit(email.trim());
+      
+      // Reset form and close modal
       setEmail('');
       onClose();
-    }, 1000);
+
+    } catch (error) {
+      console.error('Error creating child account:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create child account';
+      setError(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -65,16 +114,27 @@ const CreateChildAccountModal: React.FC<CreateChildAccountModalProps> = ({
                   type="email"
                   id="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setError(null); // Clear error when user types
+                  }}
                   placeholder="Enter email address"
                   className="w-full pl-12 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-white placeholder-gray-400"
                   required
+                  disabled={isSubmitting}
                 />
               </div>
               <p className="mt-2 text-sm text-gray-400">
                 An invitation email will be sent to this address.
               </p>
             </div>
+
+            {/* Error Message */}
+            {error && (
+              <div className="p-3 bg-red-900/20 border border-red-700 rounded-lg">
+                <p className="text-red-400 text-sm">{error}</p>
+              </div>
+            )}
           </div>
 
           {/* Footer */}
@@ -83,18 +143,19 @@ const CreateChildAccountModal: React.FC<CreateChildAccountModalProps> = ({
               type="button"
               onClick={onClose}
               className="px-4 py-2 text-gray-400 hover:text-white transition-colors"
+              disabled={isSubmitting}
             >
               Cancel
             </button>
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || !email.trim()}
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Sending...
+                  Creating...
                 </>
               ) : (
                 <>

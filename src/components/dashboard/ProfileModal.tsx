@@ -15,8 +15,49 @@ interface UserProfile {
   name?: string;
   email?: string;
   website?: string;
-  'custom:FirmName'?: string;
+  'custom:firmName'?: string;
 }
+
+// Helper function to compress and resize image
+const compressImage = (file: File, maxWidth: number = 400, maxHeight: number = 400, quality: number = 0.8): Promise<Blob> => {
+  return new Promise((resolve, reject) => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    
+    img.onload = () => {
+      // Calculate new dimensions
+      let { width, height } = img;
+      if (width > height) {
+        if (width > maxWidth) {
+          height = (height * maxWidth) / width;
+          width = maxWidth;
+        }
+      } else {
+        if (height > maxHeight) {
+          width = (width * maxHeight) / height;
+          height = maxHeight;
+        }
+      }
+      
+      canvas.width = width;
+      canvas.height = height;
+      
+      // Draw and compress
+      ctx?.drawImage(img, 0, 0, width, height);
+      canvas.toBlob((blob) => {
+        if (blob) {
+          resolve(blob);
+        } else {
+          reject(new Error('Failed to compress image'));
+        }
+      }, 'image/jpeg', quality);
+    };
+    
+    img.onerror = () => reject(new Error('Failed to load image'));
+    img.src = URL.createObjectURL(file);
+  });
+};
 
 const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, profileImg, setProfileImg, user }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -37,21 +78,32 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, profileImg, 
       return;
     }
 
+    // Check file size (limit to 5MB before compression)
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Image file is too large. Please select an image smaller than 5MB.");
+      return;
+    }
+
     setIsLoading(true);
 
-    // Show a local preview immediately for better UX
-    const reader = new FileReader();
-    reader.onload = (ev) => setProfileImg(ev.target?.result as string);
-    reader.readAsDataURL(file);
-
-    // Construct the upload URL
-    const session = await fetchAuthSession();
-    const jwtToken = session.tokens?.idToken?.toString() || '';
-    const uploadUrl = `${apiBaseUrl}/uploadprofilepic`;
-    console.log(`Uploading to: ${uploadUrl}`);
-
     try {
-      // Perform the upload
+      // Compress and resize the image
+      const compressedBlob = await compressImage(file, 400, 400, 0.8);
+      console.log(`Original size: ${file.size} bytes, Compressed size: ${compressedBlob.size} bytes`);
+      console.log(`File type: ${file.type}, Compressed type: ${compressedBlob.type}`);
+
+      // Show a local preview immediately for better UX
+      const reader = new FileReader();
+      reader.onload = (ev) => setProfileImg(ev.target?.result as string);
+      reader.readAsDataURL(compressedBlob);
+
+      // Construct the upload URL
+      const session = await fetchAuthSession();
+      const jwtToken = session.tokens?.idToken?.toString() || '';
+      const uploadUrl = `${apiBaseUrl}/uploadprofilepic`;
+      console.log(`Uploading to: ${uploadUrl}`);
+
+      // Convert compressed blob to base64
       const base64Data = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => {
@@ -61,15 +113,22 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, profileImg, 
           }
         };
         reader.onerror = reject;
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(compressedBlob);
       });
 
       const binary = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
 
+      // Check if compressed size is still too large (API Gateway limit is ~10MB)
+      if (binary.length > 8 * 1024 * 1024) { // 8MB limit to be safe
+        alert("Image is still too large after compression. Please try a smaller image.");
+        setProfileImg(profileImg);
+        return;
+      }
+
       const uploadResponse = await fetch(uploadUrl, {
         method: 'POST',
         headers: {
-          'Content-Type': file.type,
+          'Content-Type': 'image/jpeg',
           'Authorization': jwtToken
         },
         body: binary,
@@ -217,9 +276,8 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ open, onClose, profileImg, 
                 </button>
                 <input ref={fileInputRef} type="file" accept="image/jpeg,image/png" className="hidden" onChange={handleImageChange} />
               </div>
-              <div className="font-semibold text-lg mt-2 mb-1 text-white">{user?.name || 'Unnamed User'}</div>
-              <div className="text-sm text-gray-400">@{user?.username || '...'}</div>
-              <div className="text-gray-300 mt-2">{user?.['custom:FirmName'] || 'No Firm Name'}</div>
+              <div className="font-semibold text-lg mt-2 mb-1 text-white">@{user?.username || '...'}</div>
+              <div className="text-gray-300 mt-2">{user?.['custom:firmName'] || 'No Firm Name'}</div>
               <div className="text-gray-400 text-sm mt-2">{user?.email}</div>
               <div className="text-gray-400 text-sm">{user?.website ? <a href={user.website} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">{user.website}</a> : 'No website'}</div>
             </div>

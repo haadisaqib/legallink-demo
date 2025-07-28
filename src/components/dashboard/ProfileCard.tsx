@@ -3,10 +3,9 @@ import { ChevronDown } from "lucide-react";
 
 interface UserProfile {
   username?: string;
-  name?: string;
   email?: string;
   website?: string;
-  'custom:FirmName'?: string;
+  'custom:firmName'?: string;
 }
 
 interface ProfileCardProps {
@@ -16,7 +15,8 @@ interface ProfileCardProps {
 }
 
 const ProfileCard: React.FC<ProfileCardProps> = ({ onClick, user, profileImg }) => {
-  const initials = user?.name?.split(' ').map(n => n[0]).join('') || user?.username?.charAt(0).toUpperCase() || 'U';
+  const initials =
+    user?.username?.charAt(0).toUpperCase() || 'U';
 
   return (
     <button
@@ -36,8 +36,8 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ onClick, user, profileImg }) 
         )}
       </div>
       <div className="flex-1 text-left">
-        <div className="font-semibold text-white">{user?.name || 'Unnamed User'}</div>
-        <div className="text-xs text-gray-400">{user?.['custom:FirmName'] || 'No Firm Name'}</div>
+        <div className="font-semibold text-white">{user?.username || 'Unnamed User'}</div>
+        <div className="text-xs text-gray-400">{user?.['custom:firmName'] || 'No Firm Name'}</div>
       </div>
       <ChevronDown className="text-gray-400" size={20} />
     </button>

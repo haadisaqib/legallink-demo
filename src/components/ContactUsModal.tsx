@@ -29,15 +29,50 @@ const ContactUsModal: React.FC<ContactUsModalProps> = ({ isOpen, onClose }) => {
       return;
     }
     setIsSubmitting(true);
-    // Placeholder for backend integration
-    setTimeout(() => {
-      setIsSubmitting(false);
+
+    try {
+      // API Gateway base URL from environment variable
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+      const contactFormUrl = `${apiBaseUrl}/contact-form`;
+      
+      console.log('Sending contact form to:', contactFormUrl);
+      console.log('Request payload:', { name: name.trim(), email: email.trim(), subject: subject.trim(), message: message.trim() });
+      
+      const response = await fetch(contactFormUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim(),
+          subject: subject.trim(),
+          message: message.trim()
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('API Error Response:', errorData);
+        console.error('Response Status:', response.status);
+        throw new Error(errorData.error || `Failed to send message (Status: ${response.status})`);
+      }
+
+      const result = await response.json();
+      console.log('Contact form submission successful:', result);
+      
       setSuccess(true);
       setName('');
       setEmail('');
       setSubject('');
       setMessage('');
-    }, 1200);
+    } catch (error) {
+      console.error('Error sending contact form:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to send message';
+      setError(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
